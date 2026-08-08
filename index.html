@@ -67,18 +67,24 @@
             font-size: 14px;
         }
 
-        input[type="text"], 
-        input[type="number"] {
+        input[type="number"],
+        select {
             width: 100%;
             padding: 12px;
             border: 1px solid var(--border-color);
             border-radius: 6px;
             font-size: 15px;
+            background-color: #fff;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
 
-        input[type="text"]:focus, 
-        input[type="number"]:focus {
+        select:disabled {
+            background-color: #f0f0f0;
+            cursor: not-allowed;
+        }
+
+        input[type="number"]:focus,
+        select:focus {
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.15);
@@ -160,18 +166,22 @@
 <div class="container">
     <div class="header">
         <h2>Relatório Semanal</h2>
-        <p>App Quero te Conhecer</p>
+        <p>App Quero te Conhecer - Igreja Universal</p>
     </div>
     
     <form id="relatorio-form">
         <div class="form-group">
             <label for="cidade">Cidade:</label>
-            <input type="text" id="cidade" name="cidade" required placeholder="Ex: Manaus">
+            <select id="cidade" name="cidade" required>
+                <option value="">Selecione a cidade...</option>
+            </select>
         </div>
 
         <div class="form-group">
             <label for="bairro">Bairro da Igreja:</label>
-            <input type="text" id="bairro" name="bairro" required placeholder="Ex: Centro">
+            <select id="bairro" name="bairro" required disabled>
+                <option value="">Selecione a cidade primeiro...</option>
+            </select>
         </div>
 
         <h3 class="section-divider">Quantidade de Novos Usuários</h3>
@@ -209,16 +219,83 @@
 </div>
 
 <script>
-    // Cole abaixo a URL gerada no Google Apps Script após a implantação
+    // URL do Web App gerada no Google Apps Script
     const scriptURL = 'https://script.google.com/macros/s/AKfycbxHOq7Xi7iclqOWFfLcjPqw6_7HC9uef4kWTbdq1AsEUKlwKxPhLkixG01RbM9o3bmy/exec';
-    
+
+    // Lista mapeada e ordenada de cidades e bairros
+    const locations = {
+        "Barreirinha": ["Barreirinha"],
+        "Borba": ["Borba"],
+        "Coari": ["Coari"],
+        "Iranduba": ["Iranduba"],
+        "Itacoatiara": ["Itacoatiara"],
+        "Manacapuru": ["Liberdade", "Mutirão", "Sede"],
+        "Manaus": [
+            "Alvorada 1", "Amazonino Mendes", "Americo Medeiros", "Armando Mendes", 
+            "Braga Mendes", "Cachoeirinha", "Canaranas", "Carbrás", "Catedral", 
+            "Cidade de Deus", "Cidade Nova", "Compensa 1", "Compensa 3", "Educandos", 
+            "Grande Vitória", "Gustavo Nascimento", "João Paulo", "Jorge Teixeira 3", 
+            "Jorge Teixeira 4", "Lago Azul", "Lirio do Vale", "Manoa", "Mauazinho", 
+            "Monte das Oliveiras", "Nova Cidade", "Novo Aleixo", "Novo Israel", 
+            "Ouro Verde", "Parque Riachuello", "Petropolis", "Petropolis 2", 
+            "Ponta Negra", "Raiz", "Redenção", "Santo Antonio", "Santos Dumont", 
+            "São José 1", "São José 2", "Terra Nova", "Terra Nova 3", 
+            "União da Vitório", "Viver Melhor", "Zumbi"
+        ],
+        "Manicoré": ["Manicoré"],
+        "Novo Aripuanã": ["Novo Aripuanã"],
+        "Parintins": ["Parintins"],
+        "Presidente Figueiredo": ["Presidente Figueiredo"],
+        "São Gabriel da Cachoeira": ["São Gabriel da Cachoeira"],
+        "Tabatinga": ["Tabatinga"],
+        "Tefé": ["Tefé"]
+    };
+
+    const cidadeSelect = document.getElementById('cidade');
+    const bairroSelect = document.getElementById('bairro');
     const form = document.getElementById('relatorio-form');
     const message = document.getElementById('message');
     const btnSubmit = document.getElementById('btn-submit');
     const counters = document.querySelectorAll('.counter');
     const totalDisplay = document.getElementById('total-display');
 
-    // Atualiza a contagem total de entradas em tempo real
+    // Popula a dropdown de cidades em ordem alfabética
+    Object.keys(locations).sort().forEach(city => {
+        const option = document.createElement('option');
+        option.value = city;
+        option.textContent = city;
+        cidadeSelect.appendChild(option);
+    });
+
+    // Atualiza os bairros dependendo da cidade selecionada
+    cidadeSelect.addEventListener('change', function() {
+        const selectedCity = this.value;
+        bairroSelect.innerHTML = '';
+
+        if (selectedCity && locations[selectedCity]) {
+            bairroSelect.disabled = false;
+            
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Selecione o bairro...';
+            bairroSelect.appendChild(defaultOption);
+
+            locations[selectedCity].sort().forEach(bairro => {
+                const option = document.createElement('option');
+                option.value = bairro;
+                option.textContent = bairro;
+                bairroSelect.appendChild(option);
+            });
+        } else {
+            bairroSelect.disabled = true;
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Selecione a cidade primeiro...';
+            bairroSelect.appendChild(defaultOption);
+        }
+    });
+
+    // Atualiza o total de cadastros
     function updateTotal() {
         let sum = 0;
         counters.forEach(input => {
@@ -229,6 +306,7 @@
 
     counters.forEach(input => input.addEventListener('input', updateTotal));
 
+    // Envio do formulário via Fetch API
     form.addEventListener('submit', e => {
         e.preventDefault();
         
@@ -245,6 +323,8 @@
             message.innerText = 'Relatório enviado com sucesso!';
             message.className = 'success';
             form.reset();
+            bairroSelect.disabled = true;
+            bairroSelect.innerHTML = '<option value="">Selecione a cidade primeiro...</option>';
             updateTotal();
         })
         .catch(error => {
