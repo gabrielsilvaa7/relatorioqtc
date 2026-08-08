@@ -25,6 +25,7 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
@@ -38,6 +39,30 @@
             box-shadow: 0 8px 24px rgba(0,0,0,0.08);
             width: 100%;
             max-width: 480px;
+            position: relative;
+        }
+
+        .status-badge {
+            text-align: center;
+            font-size: 13px;
+            font-weight: bold;
+            padding: 6px 12px;
+            border-radius: 20px;
+            margin-bottom: 16px;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .status-badge.open {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+        }
+
+        .status-badge.closed {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
         }
 
         .header {
@@ -75,16 +100,9 @@
             border-radius: 6px;
             font-size: 15px;
             background-color: #fff;
-            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
-        input[type="number"]:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.15);
-        }
-
-        /* Searchable Select Custom Component */
+        /* Searchable Select */
         .custom-select {
             position: relative;
             width: 100%;
@@ -101,29 +119,21 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            user-select: none;
-            transition: border-color 0.2s;
         }
 
         .select-trigger .arrow {
             font-size: 10px;
             color: #666;
-            transition: transform 0.2s;
         }
 
         .custom-select.open .select-trigger {
             border-color: var(--primary-color);
         }
 
-        .custom-select.open .arrow {
-            transform: rotate(180deg);
-        }
-
         .custom-select.disabled .select-trigger {
             background-color: #f0f0f0;
             cursor: not-allowed;
             color: #888;
-            border-color: #e0e0e0;
         }
 
         .select-dropdown {
@@ -138,7 +148,6 @@
             z-index: 100;
             display: none;
             flex-direction: column;
-            overflow: hidden;
         }
 
         .custom-select.open .select-dropdown {
@@ -160,10 +169,6 @@
             outline: none;
         }
 
-        .search-input:focus {
-            border-color: var(--primary-color);
-        }
-
         .options-list {
             list-style: none;
             max-height: 180px;
@@ -176,19 +181,11 @@
             padding: 10px 12px;
             cursor: pointer;
             font-size: 14px;
-            transition: background 0.15s;
         }
 
         .options-list li:hover {
             background-color: #f4f4f9;
             color: var(--primary-color);
-            font-weight: 500;
-        }
-
-        .options-list li.no-result {
-            color: #999;
-            cursor: default;
-            text-align: center;
         }
 
         .section-divider {
@@ -216,7 +213,7 @@
             color: #444;
         }
 
-        button {
+        button[type="submit"] {
             width: 100%;
             padding: 14px;
             background-color: var(--primary-color);
@@ -226,7 +223,6 @@
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.2s, opacity 0.2s;
         }
 
         button:hover {
@@ -260,18 +256,39 @@
             color: #c62828;
             border: 1px solid #ef9a9a;
         }
+
+        /* Admin Footer Link */
+        .admin-footer {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .admin-btn {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 12px;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .admin-btn:hover {
+            color: #333;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <div id="status-badge" class="status-badge open">Verificando status do sistema...</div>
+
     <div class="header">
         <h2>Relatório Semanal</h2>
-        <p>App Quero te Conhecer</p>
+        <p>App Quero te Conhecer - Igreja Universal</p>
     </div>
     
     <form id="relatorio-form">
-        <!-- Searchable Select: Cidade -->
+        <!-- Cidade Select -->
         <div class="form-group">
             <label>Cidade:</label>
             <div class="custom-select" id="select-cidade">
@@ -289,7 +306,7 @@
             </div>
         </div>
 
-        <!-- Searchable Select: Bairro -->
+        <!-- Bairro Select -->
         <div class="form-group">
             <label>Bairro da Igreja:</label>
             <div class="custom-select disabled" id="select-bairro">
@@ -341,10 +358,13 @@
     <div id="message"></div>
 </div>
 
+<div class="admin-footer">
+    <button id="admin-toggle-btn" class="admin-btn">⚙️ Painel do Administrador</button>
+</div>
+
 <script>
     const scriptURL = 'https://script.google.com/macros/s/AKfycbxHOq7Xi7iclqOWFfLcjPqw6_7HC9uef4kWTbdq1AsEUKlwKxPhLkixG01RbM9o3bmy/exec';
 
-    // Lista mapeada de cidades e bairros
     const locations = {
         "Barreirinha": ["Barreirinha"],
         "Borba": ["Borba"],
@@ -373,7 +393,6 @@
         "Tefé": ["Tefé"]
     };
 
-    // Componente de Select com Busca Integrada
     class SearchableSelect {
         constructor(containerId, placeholder, onSelectCallback) {
             this.container = document.getElementById(containerId);
@@ -386,7 +405,6 @@
             this.placeholder = placeholder;
             this.onSelectCallback = onSelectCallback;
             this.items = [];
-
             this.initEvents();
         }
 
@@ -415,10 +433,10 @@
 
         renderItems(items) {
             this.optionsList.innerHTML = '';
-            
             if (items.length === 0) {
                 const noRes = document.createElement('li');
-                noRes.className = 'no-result';
+                noRes.style.color = '#999';
+                noRes.style.textAlign = 'center';
                 noRes.textContent = 'Nenhum resultado';
                 this.optionsList.appendChild(noRes);
                 return;
@@ -443,16 +461,12 @@
             this.hiddenInput.value = value;
             this.selectedText.textContent = value;
             this.closeDropdown();
-            if (this.onSelectCallback) {
-                this.onSelectCallback(value);
-            }
+            if (this.onSelectCallback) this.onSelectCallback(value);
         }
 
         toggleDropdown() {
             const isOpen = this.container.classList.contains('open');
-            // Fechar outros dropdowns abertos na página
             document.querySelectorAll('.custom-select').forEach(cs => cs.classList.remove('open'));
-            
             if (!isOpen) {
                 this.container.classList.add('open');
                 this.searchInput.value = '';
@@ -465,17 +479,13 @@
             this.container.classList.remove('open');
         }
 
-        enable() {
-            this.container.classList.remove('disabled');
-        }
-
+        enable() { this.container.classList.remove('disabled'); }
         disable(message) {
             this.container.classList.add('disabled');
             this.hiddenInput.value = '';
             this.selectedText.textContent = message;
             this.closeDropdown();
         }
-
         reset() {
             this.hiddenInput.value = '';
             this.selectedText.textContent = this.placeholder;
@@ -483,7 +493,6 @@
         }
     }
 
-    // Inicialização dos Selects
     const citySelect = new SearchableSelect('select-cidade', 'Selecione a cidade...', (selectedCity) => {
         if (selectedCity && locations[selectedCity]) {
             bairroSelect.enable();
@@ -493,8 +502,6 @@
     });
 
     const bairroSelect = new SearchableSelect('select-bairro', 'Selecione o bairro...', null);
-
-    // Carregar Cidades
     citySelect.setItems(Object.keys(locations));
 
     // Contador Total
@@ -503,23 +510,75 @@
 
     function updateTotal() {
         let sum = 0;
-        counters.forEach(input => {
-            sum += parseInt(input.value) || 0;
-        });
+        counters.forEach(input => sum += parseInt(input.value) || 0);
         totalDisplay.innerText = sum;
     }
-
     counters.forEach(input => input.addEventListener('input', updateTotal));
 
-    // Envio do formulário
+    // System Status Handling
+    const statusBadge = document.getElementById('status-badge');
+    const btnSubmit = document.getElementById('btn-submit');
+    let isSystemOpen = true;
+
+    function checkStatus() {
+        fetch(`${scriptURL}?action=get_status`)
+            .then(res => res.json())
+            .then(data => {
+                updateStatusUI(data.status);
+            })
+            .catch(() => {
+                updateStatusUI("ABERTO"); // Default to open on network fail
+            });
+    }
+
+    function updateStatusUI(status) {
+        if (status === "ABERTO") {
+            isSystemOpen = true;
+            statusBadge.className = "status-badge open";
+            statusBadge.innerText = "🟢 Sistema Aberto para Envio";
+            btnSubmit.disabled = false;
+        } else {
+            isSystemOpen = false;
+            statusBadge.className = "status-badge closed";
+            statusBadge.innerText = "🔴 Sistema Fechado pelo Administrador";
+            btnSubmit.disabled = true;
+        }
+    }
+
+    // Admin Toggle Button Listener
+    document.getElementById('admin-toggle-btn').addEventListener('click', () => {
+        const pin = prompt("Digite o PIN do Administrador:");
+        if (!pin) return;
+
+        const formData = new FormData();
+        formData.append('action', 'toggle_status');
+        formData.append('pin', pin);
+
+        fetch(scriptURL, { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if (data.result === 'success') {
+                    alert(`Status alterado com sucesso para: ${data.status}`);
+                    updateStatusUI(data.status);
+                } else {
+                    alert(`Erro: ${data.message}`);
+                }
+            })
+            .catch(err => alert("Erro ao comunicar com o servidor."));
+    });
+
+    // Submit Handler
     const form = document.getElementById('relatorio-form');
     const message = document.getElementById('message');
-    const btnSubmit = document.getElementById('btn-submit');
 
     form.addEventListener('submit', e => {
         e.preventDefault();
 
-        // Validação manual dos selects customizados
+        if (!isSystemOpen) {
+            alert('O sistema está fechado para novos envios.');
+            return;
+        }
+
         if (!document.getElementById('cidade-value').value) {
             alert('Por favor, selecione uma cidade.');
             return;
@@ -534,31 +593,34 @@
         message.className = '';
         message.style.display = 'none';
 
-        fetch(scriptURL, { 
-            method: 'POST', 
-            body: new FormData(form)
-        })
-        .then(response => {
-            message.innerText = 'Relatório enviado com sucesso!';
-            message.className = 'success';
-            form.reset();
-            citySelect.reset();
-            bairroSelect.disable('Selecione a cidade primeiro...');
-            updateTotal();
-        })
-        .catch(error => {
-            message.innerText = 'Erro ao enviar o relatório. Verifique sua conexão e tente novamente.';
-            message.className = 'error';
-            console.error('Erro no envio:', error);
-        })
-        .finally(() => {
-            btnSubmit.innerText = 'Enviar Relatório';
-            btnSubmit.disabled = false;
-            setTimeout(() => { 
-                message.style.display = 'none'; 
-            }, 6000);
-        });
+        fetch(scriptURL, { method: 'POST', body: new FormData(form) })
+            .then(res => res.json())
+            .then(data => {
+                if (data.result === 'success') {
+                    message.innerText = 'Relatório enviado com sucesso!';
+                    message.className = 'success';
+                    form.reset();
+                    citySelect.reset();
+                    bairroSelect.disable('Selecione a cidade primeiro...');
+                    updateTotal();
+                } else {
+                    message.innerText = data.message;
+                    message.className = 'error';
+                }
+            })
+            .catch(error => {
+                message.innerText = 'Erro ao enviar o relatório. Verifique sua conexão e tente novamente.';
+                message.className = 'error';
+            })
+            .finally(() => {
+                btnSubmit.innerText = 'Enviar Relatório';
+                btnSubmit.disabled = !isSystemOpen;
+                setTimeout(() => { message.style.display = 'none'; }, 6000);
+            });
     });
+
+    // Check status on page load
+    checkStatus();
 </script>
 
 </body>
