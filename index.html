@@ -102,7 +102,6 @@
             background-color: #fff;
         }
 
-        /* Searchable Select */
         .custom-select {
             position: relative;
             width: 100%;
@@ -211,6 +210,11 @@
             margin: 16px 0;
             font-weight: bold;
             color: #444;
+            font-size: 14px;
+        }
+
+        .total-card div {
+            margin-bottom: 4px;
         }
 
         button[type="submit"] {
@@ -257,7 +261,6 @@
             border: 1px solid #ef9a9a;
         }
 
-        /* Admin Footer Link */
         .admin-footer {
             margin-top: 20px;
             text-align: center;
@@ -284,7 +287,7 @@
 
     <div class="header">
         <h2>Relatório Semanal</h2>
-        <p>App Quero te Conhecer</p>
+        <p>App Quero te Conhecer - Igreja Universal</p>
     </div>
     
     <form id="relatorio-form">
@@ -324,32 +327,47 @@
             </div>
         </div>
 
-        <h3 class="section-divider">Quantidade de Novos Usuários</h3>
+        <!-- SEÇÃO: AVALIAÇÕES DO APP -->
+        <h3 class="section-divider">Avaliações do App</h3>
+        <div class="grid-inputs">
+            <div class="form-group">
+                <label for="aval_android">Android:</label>
+                <input type="number" id="aval_android" name="aval_android" min="0" required value="0" class="counter-aval">
+            </div>
 
+            <div class="form-group">
+                <label for="aval_ios">iOS:</label>
+                <input type="number" id="aval_ios" name="aval_ios" min="0" required value="0" class="counter-aval">
+            </div>
+        </div>
+
+        <!-- SEÇÃO: NOVOS USUÁRIOS -->
+        <h3 class="section-divider">Quantidade de Novos Usuários</h3>
         <div class="grid-inputs">
             <div class="form-group">
                 <label for="membro_mulher">Membros (Mulheres):</label>
-                <input type="number" id="membro_mulher" name="membro_mulher" min="0" required value="0" class="counter">
+                <input type="number" id="membro_mulher" name="membro_mulher" min="0" required value="0" class="counter-user">
             </div>
 
             <div class="form-group">
                 <label for="membro_homem">Membros (Homens):</label>
-                <input type="number" id="membro_homem" name="membro_homem" min="0" required value="0" class="counter">
+                <input type="number" id="membro_homem" name="membro_homem" min="0" required value="0" class="counter-user">
             </div>
 
             <div class="form-group">
                 <label for="obreiro">Obreiros:</label>
-                <input type="number" id="obreiro" name="obreiro" min="0" required value="0" class="counter">
+                <input type="number" id="obreiro" name="obreiro" min="0" required value="0" class="counter-user">
             </div>
 
             <div class="form-group">
                 <label for="obreira">Obreiras:</label>
-                <input type="number" id="obreira" name="obreira" min="0" required value="0" class="counter">
+                <input type="number" id="obreira" name="obreira" min="0" required value="0" class="counter-user">
             </div>
         </div>
 
         <div class="total-card">
-            Total de Novos Cadastros: <span id="total-display">0</span>
+            <div>Total Avaliações: <span id="total-aval-display">0</span></div>
+            <div>Total Novos Usuários: <span id="total-user-display">0</span></div>
         </div>
 
         <button type="submit" id="btn-submit">Enviar Relatório</button>
@@ -504,16 +522,24 @@
     const bairroSelect = new SearchableSelect('select-bairro', 'Selecione o bairro...', null);
     citySelect.setItems(Object.keys(locations));
 
-    // Contador Total
-    const counters = document.querySelectorAll('.counter');
-    const totalDisplay = document.getElementById('total-display');
+    // Calculation logic
+    const avalCounters = document.querySelectorAll('.counter-aval');
+    const userCounters = document.querySelectorAll('.counter-user');
+    const totalAvalDisplay = document.getElementById('total-aval-display');
+    const totalUserDisplay = document.getElementById('total-user-display');
 
-    function updateTotal() {
-        let sum = 0;
-        counters.forEach(input => sum += parseInt(input.value) || 0);
-        totalDisplay.innerText = sum;
+    function updateTotals() {
+        let sumAval = 0;
+        let sumUser = 0;
+        avalCounters.forEach(input => sumAval += parseInt(input.value) || 0);
+        userCounters.forEach(input => sumUser += parseInt(input.value) || 0);
+        
+        totalAvalDisplay.innerText = sumAval;
+        totalUserDisplay.innerText = sumUser;
     }
-    counters.forEach(input => input.addEventListener('input', updateTotal));
+
+    avalCounters.forEach(input => input.addEventListener('input', updateTotals));
+    userCounters.forEach(input => input.addEventListener('input', updateTotals));
 
     // System Status Handling
     const statusBadge = document.getElementById('status-badge');
@@ -527,7 +553,7 @@
                 updateStatusUI(data.status);
             })
             .catch(() => {
-                updateStatusUI("ABERTO"); // Default to open on network fail
+                updateStatusUI("ABERTO");
             });
     }
 
@@ -545,7 +571,7 @@
         }
     }
 
-    // Admin Toggle Button Listener
+    // Admin Toggle Button
     document.getElementById('admin-toggle-btn').addEventListener('click', () => {
         const pin = prompt("Digite o PIN do Administrador:");
         if (!pin) return;
@@ -564,7 +590,7 @@
                     alert(`Erro: ${data.message}`);
                 }
             })
-            .catch(err => alert("Erro ao comunicar com o servidor."));
+            .catch(() => alert("Erro ao comunicar com o servidor."));
     });
 
     // Submit Handler
@@ -602,13 +628,13 @@
                     form.reset();
                     citySelect.reset();
                     bairroSelect.disable('Selecione a cidade primeiro...');
-                    updateTotal();
+                    updateTotals();
                 } else {
                     message.innerText = data.message;
                     message.className = 'error';
                 }
             })
-            .catch(error => {
+            .catch(() => {
                 message.innerText = 'Erro ao enviar o relatório. Verifique sua conexão e tente novamente.';
                 message.className = 'error';
             })
@@ -619,7 +645,6 @@
             });
     });
 
-    // Check status on page load
     checkStatus();
 </script>
 
