@@ -465,11 +465,29 @@
             }).catch(() => alert("Erro ao comunicar com o servidor."));
     });
 
-    // Envio do Formulário
+    // -------------------------------------------------------------
+    // FUNÇÃO ASSÍNCRONA DE RETENTATIVA (Lida com picos de servidor)
+    // -------------------------------------------------------------
+    async function fetchWithRetry(url, options, retries = 3, backoff = 2000) {
+        for (let i = 0; i < retries; i++) {
+            try {
+                const response = await fetch(url, options);
+                if (!response.ok) throw new Error('Falha na resposta da rede');
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                if (i === retries - 1) throw error; 
+                console.warn(`Tentativa ${i + 1} falhou. Tentando novamente em ${backoff}ms...`);
+                await new Promise(res => setTimeout(res, backoff));
+            }
+        }
+    }
+
+    // Envio do Formulário (Usando fetchWithRetry)
     const form = document.getElementById('relatorio-form');
     const message = document.getElementById('message');
 
-    form.addEventListener('submit', e => {
+    form.addEventListener('submit', async e => {
         e.preventDefault();
         if (!isSystemOpen) { alert('Sistema fechado para novos envios.'); return; }
         if (!document.getElementById('cidade-value').value) { alert('Selecione uma cidade.'); return; }
@@ -479,38 +497,41 @@
         btnSubmit.disabled = true;
         message.style.display = 'none';
 
-        fetch(scriptURL, { method: 'POST', body: new FormData(form) })
-            .then(res => res.json())
-            .then(data => {
-                if (data.result === 'success') {
-                    message.innerText = 'Relatório enviado com sucesso!';
-                    message.className = 'success';
-                    form.reset();
-                    document.querySelectorAll('.num-input').forEach(i => i.value = '0');
-                    citySelect.reset();
-                    bairroSelect.disable('Selecione a cidade primeiro...');
-                    updateTotals();
-                    
-                    // Recarrega o painel de status caso esteja aberto
-                    if (document.getElementById('status-board').style.display === 'block') {
-                        loadWeeklyStatus();
-                    }
-                } else {
-                    message.innerText = data.message;
-                    message.className = 'error';
+        try {
+            const formData = new FormData(form);
+            // Chama a API com Retry (3 tentativas, com 2 segundos entre elas)
+            const data = await fetchWithRetry(scriptURL, { method: 'POST', body: formData }, 3, 2000);
+
+            if (data.result === 'success') {
+                message.innerText = 'Relatório enviado com sucesso!';
+                message.className = 'success';
+                form.reset();
+                document.querySelectorAll('.num-input').forEach(i => i.value = '0');
+                citySelect.reset();
+                bairroSelect.disable('Selecione a cidade primeiro...');
+                updateTotals();
+                
+                // Recarrega o painel de status caso esteja aberto
+                if (document.getElementById('status-board').style.display === 'block') {
+                    loadWeeklyStatus();
                 }
-            })
-            .catch(() => { message.innerText = 'Erro ao enviar. Tente novamente.'; message.className = 'error'; })
-            .finally(() => {
-                btnSubmit.innerText = 'Enviar Relatório';
-                btnSubmit.disabled = !isSystemOpen;
-                setTimeout(() => { message.style.display = 'none'; }, 6000);
-            });
+            } else {
+                message.innerText = data.message;
+                message.className = 'error';
+            }
+        } catch (error) {
+            message.innerText = 'Erro de comunicação ao enviar. Verifique sua conexão e tente novamente.';
+            message.className = 'error';
+        } finally {
+            btnSubmit.innerText = 'Enviar Relatório';
+            btnSubmit.disabled = !isSystemOpen;
+            setTimeout(() => { message.style.display = 'none'; }, 6000);
+        }
     });
 
     checkStatus();
 
-    // LÓGICA DO PAINEL DE STATUS SEMANAL COM CONTADOR E CÓPIA
+    // LÓGICA DO PAINEL DE STATUS SEMANAL
     const btnViewStatus = document.getElementById('btn-view-status');
     const statusBoard = document.getElementById('status-board');
     const statusContent = document.getElementById('status-content');
@@ -588,7 +609,6 @@
             
             html += `</div></div>`;
 
-            // Adiciona as cidades aos textos de cópia
             if (cityOkList.length > 0) {
                 textToCopyOk += `📍 *${city}*:\n` + cityOkList.map(b => `  - ${b}`).join("\n") + "\n\n";
             }
@@ -597,7 +617,6 @@
             }
         });
 
-        // Atualiza os contadores na tela
         document.getElementById('count-ok').innerText = countOk;
         document.getElementById('count-nok').innerText = countNok;
         
