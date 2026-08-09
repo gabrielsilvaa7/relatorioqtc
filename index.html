@@ -14,11 +14,7 @@
             --border-color: #cccccc;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -26,7 +22,6 @@
             color: var(--text-color);
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
             min-height: 100vh;
             padding: 20px;
@@ -40,6 +35,7 @@
             width: 100%;
             max-width: 480px;
             position: relative;
+            margin-bottom: 20px;
         }
 
         .status-badge {
@@ -53,231 +49,91 @@
             width: 100%;
         }
 
-        .status-badge.open {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-            border: 1px solid #a5d6a7;
-        }
+        .status-badge.open { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+        .status-badge.closed { background-color: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
 
-        .status-badge.closed {
-            background-color: #ffebee;
-            color: #c62828;
-            border: 1px solid #ef9a9a;
-        }
+        .header { text-align: center; margin-bottom: 24px; }
+        .header h2 { color: var(--primary-color); font-size: 24px; margin-bottom: 6px; }
+        .header p { font-size: 14px; color: #666; }
 
-        .header {
-            text-align: center;
-            margin-bottom: 24px;
-        }
-
-        .header h2 {
-            color: var(--primary-color);
-            font-size: 24px;
-            margin-bottom: 6px;
-        }
-
-        .header p {
-            font-size: 14px;
-            color: #666;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-            position: relative;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
+        .form-group { margin-bottom: 16px; position: relative; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; }
         input[type="number"] {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 15px;
-            background-color: #fff;
+            width: 100%; padding: 12px; border: 1px solid var(--border-color);
+            border-radius: 6px; font-size: 15px; background-color: #fff;
         }
 
-        .custom-select {
-            position: relative;
-            width: 100%;
-        }
-
+        /* Select Customizado */
+        .custom-select { position: relative; width: 100%; }
         .select-trigger {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 15px;
-            background-color: #fff;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            width: 100%; padding: 12px; border: 1px solid var(--border-color);
+            border-radius: 6px; font-size: 15px; background-color: #fff;
+            cursor: pointer; display: flex; justify-content: space-between; align-items: center;
         }
-
-        .select-trigger .arrow {
-            font-size: 10px;
-            color: #666;
-        }
-
-        .custom-select.open .select-trigger {
-            border-color: var(--primary-color);
-        }
-
-        .custom-select.disabled .select-trigger {
-            background-color: #f0f0f0;
-            cursor: not-allowed;
-            color: #888;
-        }
-
+        .select-trigger .arrow { font-size: 10px; color: #666; }
+        .custom-select.open .select-trigger { border-color: var(--primary-color); }
+        .custom-select.disabled .select-trigger { background-color: #f0f0f0; cursor: not-allowed; color: #888; }
+        
         .select-dropdown {
-            position: absolute;
-            top: calc(100% + 4px);
-            left: 0;
-            right: 0;
-            background: #fff;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.12);
-            z-index: 100;
-            display: none;
-            flex-direction: column;
+            position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+            background: #fff; border: 1px solid var(--border-color); border-radius: 6px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.12); z-index: 100; display: none; flex-direction: column;
         }
-
-        .custom-select.open .select-dropdown {
-            display: flex;
-        }
-
-        .search-box {
-            padding: 8px;
-            border-bottom: 1px solid #eee;
-            background-color: #fafafa;
-        }
-
+        .custom-select.open .select-dropdown { display: flex; }
+        .search-box { padding: 8px; border-bottom: 1px solid #eee; background-color: #fafafa; }
         .search-input {
-            width: 100%;
-            padding: 8px 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-size: 14px;
-            outline: none;
+            width: 100%; padding: 8px 10px; border: 1px solid var(--border-color);
+            border-radius: 4px; font-size: 14px; outline: none;
         }
-
-        .options-list {
-            list-style: none;
-            max-height: 180px;
-            overflow-y: auto;
-            margin: 0;
-            padding: 0;
-        }
-
-        .options-list li {
-            padding: 10px 12px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .options-list li:hover {
-            background-color: #f4f4f9;
-            color: var(--primary-color);
-        }
+        .options-list { list-style: none; max-height: 180px; overflow-y: auto; margin: 0; padding: 0; }
+        .options-list li { padding: 10px 12px; cursor: pointer; font-size: 14px; }
+        .options-list li:hover { background-color: #f4f4f9; color: var(--primary-color); }
 
         .section-divider {
-            margin: 24px 0 16px 0;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #eee;
-            color: #444;
-            font-size: 16px;
+            margin: 24px 0 16px 0; padding-bottom: 8px; border-bottom: 2px solid #eee;
+            color: #444; font-size: 16px;
         }
-
-        .grid-inputs {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
         .total-card {
-            background-color: #f8f9fa;
-            border: 1px dashed #ccc;
-            padding: 12px;
-            border-radius: 6px;
-            text-align: center;
-            margin: 16px 0;
-            font-weight: bold;
-            color: #444;
-            font-size: 14px;
+            background-color: #f8f9fa; border: 1px dashed #ccc; padding: 12px;
+            border-radius: 6px; text-align: center; margin: 16px 0; font-weight: bold;
+            color: #444; font-size: 14px;
         }
+        .total-card div { margin-bottom: 4px; }
 
-        .total-card div {
-            margin-bottom: 4px;
+        button {
+            width: 100%; padding: 14px; background-color: var(--primary-color);
+            color: white; border: none; border-radius: 6px; font-size: 16px;
+            font-weight: bold; cursor: pointer; transition: background-color 0.2s;
         }
+        button:hover { background-color: var(--primary-hover); }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        button[type="submit"] {
-            width: 100%;
-            padding: 14px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+        #message { text-align: center; margin-top: 16px; padding: 10px; border-radius: 6px; font-size: 14px; display: none; }
+        .success { display: block !important; background-color: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+        .error { display: block !important; background-color: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
 
-        button:hover {
-            background-color: var(--primary-hover);
+        /* Painel de Status da Semana */
+        .btn-view-status {
+            background-color: #1976d2; margin-top: 20px; font-size: 14px;
         }
+        .btn-view-status:hover { background-color: #115293; }
+        
+        .status-board {
+            display: none; background-color: #fff; padding: 20px; border-radius: 12px;
+            border: 1px solid #e0e0e0; margin-top: 15px; width: 100%; text-align: left;
+        }
+        .status-board h3 { text-align: center; font-size: 16px; color: #333; margin-bottom: 15px; }
+        .city-group { margin-bottom: 16px; }
+        .city-title { font-weight: bold; font-size: 14px; color: #1976d2; border-bottom: 1px solid #eee; padding-bottom: 4px; margin-bottom: 8px; }
+        .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .status-item { font-size: 13px; display: flex; align-items: center; color: #555;}
+        .status-item span { margin-right: 6px; font-size: 10px; }
 
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        #message {
-            text-align: center;
-            margin-top: 16px;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 14px;
-            display: none;
-        }
-
-        .success { 
-            display: block !important;
-            background-color: #e8f5e9;
-            color: #2e7d32;
-            border: 1px solid #a5d6a7;
-        }
-
-        .error { 
-            display: block !important;
-            background-color: #ffebee;
-            color: #c62828;
-            border: 1px solid #ef9a9a;
-        }
-
-        .admin-footer {
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        .admin-btn {
-            background: none;
-            border: none;
-            color: #888;
-            font-size: 12px;
-            cursor: pointer;
-            text-decoration: underline;
-        }
-
-        .admin-btn:hover {
-            color: #333;
-        }
+        .admin-footer { margin-top: 20px; text-align: center; width: 100%; }
+        .admin-btn { background: none; border: none; color: #888; font-size: 12px; cursor: pointer; text-decoration: underline; width: auto; padding: 5px;}
+        .admin-btn:hover { color: #333; background: none;}
     </style>
 </head>
 <body>
@@ -291,7 +147,6 @@
     </div>
     
     <form id="relatorio-form">
-        <!-- Cidade Select -->
         <div class="form-group">
             <label>Cidade:</label>
             <div class="custom-select" id="select-cidade">
@@ -309,7 +164,6 @@
             </div>
         </div>
 
-        <!-- Bairro Select -->
         <div class="form-group">
             <label>Bairro da Igreja:</label>
             <div class="custom-select disabled" id="select-bairro">
@@ -327,38 +181,32 @@
             </div>
         </div>
 
-        <!-- SEÇÃO: AVALIAÇÕES DO APP -->
         <h3 class="section-divider">Avaliações do App</h3>
         <div class="grid-inputs">
             <div class="form-group">
                 <label for="aval_android">Android:</label>
                 <input type="number" id="aval_android" name="aval_android" min="0" required value="0" class="counter-aval num-input">
             </div>
-
             <div class="form-group">
                 <label for="aval_ios">iOS:</label>
                 <input type="number" id="aval_ios" name="aval_ios" min="0" required value="0" class="counter-aval num-input">
             </div>
         </div>
 
-        <!-- SEÇÃO: NOVOS USUÁRIOS -->
         <h3 class="section-divider">Quantidade de Novos Usuários</h3>
         <div class="grid-inputs">
             <div class="form-group">
                 <label for="membro_mulher">Membros (Mulheres):</label>
                 <input type="number" id="membro_mulher" name="membro_mulher" min="0" required value="0" class="counter-user num-input">
             </div>
-
             <div class="form-group">
                 <label for="membro_homem">Membros (Homens):</label>
                 <input type="number" id="membro_homem" name="membro_homem" min="0" required value="0" class="counter-user num-input">
             </div>
-
             <div class="form-group">
                 <label for="obreiro">Obreiros:</label>
                 <input type="number" id="obreiro" name="obreiro" min="0" required value="0" class="counter-user num-input">
             </div>
-
             <div class="form-group">
                 <label for="obreira">Obreiras:</label>
                 <input type="number" id="obreira" name="obreira" min="0" required value="0" class="counter-user num-input">
@@ -372,8 +220,14 @@
 
         <button type="submit" id="btn-submit">Enviar Relatório</button>
     </form>
-
     <div id="message"></div>
+
+    <!-- BOTÃO E PAINEL DE STATUS DAS IGREJAS -->
+    <button type="button" id="btn-view-status" class="btn-view-status">📊 Ver Status da Semana</button>
+    <div id="status-board" class="status-board">
+        <h3 id="status-board-title">Status da Semana</h3>
+        <div id="status-content"></div>
+    </div>
 </div>
 
 <div class="admin-footer">
@@ -389,7 +243,7 @@
         "Coari": ["Coari"],
         "Iranduba": ["Iranduba"],
         "Itacoatiara": ["Itacoatiara"],
-        "Manacapuru": ["Liberdade", "Mutirão", "Sede Manacapuru"],
+        "Manacapuru": ["Liberdade", "Mutirão", "Sede"],
         "Manaus": [
             "Alvorada 1", "Amazonino Mendes", "Americo Medeiros", "Armando Mendes", 
             "Braga Mendes", "Cachoeirinha", "Canaranas", "Carbrás", "Catedral", 
@@ -432,11 +286,9 @@
                     this.toggleDropdown();
                 }
             });
-
             this.searchInput.addEventListener('input', (e) => {
                 this.filterItems(e.target.value);
             });
-
             document.addEventListener('click', (e) => {
                 if (!this.container.contains(e.target)) {
                     this.closeDropdown();
@@ -459,7 +311,6 @@
                 this.optionsList.appendChild(noRes);
                 return;
             }
-
             items.forEach(item => {
                 const li = document.createElement('li');
                 li.textContent = item;
@@ -492,11 +343,7 @@
                 setTimeout(() => this.searchInput.focus(), 100);
             }
         }
-
-        closeDropdown() {
-            this.container.classList.remove('open');
-        }
-
+        closeDropdown() { this.container.classList.remove('open'); }
         enable() { this.container.classList.remove('disabled'); }
         disable(message) {
             this.container.classList.add('disabled');
@@ -522,36 +369,27 @@
     const bairroSelect = new SearchableSelect('select-bairro', 'Selecione o bairro...', null);
     citySelect.setItems(Object.keys(locations));
 
-    // Numeric Inputs UX Handling (Clear 0 on click, restore 0 on empty blur)
+    // Controle dos Números e Totais
     document.querySelectorAll('.num-input').forEach(input => {
         input.addEventListener('focus', function() {
-            if (this.value === '0') {
-                this.value = '';
-            } else {
-                this.select();
-            }
+            if (this.value === '0') this.value = '';
+            else this.select();
         });
-
         input.addEventListener('blur', function() {
-            if (this.value === '') {
-                this.value = '0';
-            }
+            if (this.value === '') this.value = '0';
             updateTotals();
         });
     });
 
-    // Calculation logic
     const avalCounters = document.querySelectorAll('.counter-aval');
     const userCounters = document.querySelectorAll('.counter-user');
     const totalAvalDisplay = document.getElementById('total-aval-display');
     const totalUserDisplay = document.getElementById('total-user-display');
 
     function updateTotals() {
-        let sumAval = 0;
-        let sumUser = 0;
+        let sumAval = 0, sumUser = 0;
         avalCounters.forEach(input => sumAval += parseInt(input.value) || 0);
         userCounters.forEach(input => sumUser += parseInt(input.value) || 0);
-        
         totalAvalDisplay.innerText = sumAval;
         totalUserDisplay.innerText = sumUser;
     }
@@ -559,7 +397,7 @@
     avalCounters.forEach(input => input.addEventListener('input', updateTotals));
     userCounters.forEach(input => input.addEventListener('input', updateTotals));
 
-    // System Status Handling
+    // Status do Sistema (Aberto/Fechado)
     const statusBadge = document.getElementById('status-badge');
     const btnSubmit = document.getElementById('btn-submit');
     let isSystemOpen = true;
@@ -567,12 +405,8 @@
     function checkStatus() {
         fetch(`${scriptURL}?action=get_status`)
             .then(res => res.json())
-            .then(data => {
-                updateStatusUI(data.status);
-            })
-            .catch(() => {
-                updateStatusUI("ABERTO");
-            });
+            .then(data => updateStatusUI(data.status))
+            .catch(() => updateStatusUI("ABERTO"));
     }
 
     function updateStatusUI(status) {
@@ -589,11 +423,10 @@
         }
     }
 
-    // Admin Toggle Button
+    // Toggle Administrativo
     document.getElementById('admin-toggle-btn').addEventListener('click', () => {
         const pin = prompt("Digite o PIN do Administrador:");
         if (!pin) return;
-
         const formData = new FormData();
         formData.append('action', 'toggle_status');
         formData.append('pin', pin);
@@ -602,39 +435,24 @@
             .then(res => res.json())
             .then(data => {
                 if (data.result === 'success') {
-                    alert(`Status alterado com sucesso para: ${data.status}`);
+                    alert(`Status alterado para: ${data.status}`);
                     updateStatusUI(data.status);
-                } else {
-                    alert(`Erro: ${data.message}`);
-                }
-            })
-            .catch(() => alert("Erro ao comunicar com o servidor."));
+                } else { alert(`Erro: ${data.message}`); }
+            }).catch(() => alert("Erro ao comunicar com o servidor."));
     });
 
-    // Submit Handler
+    // Envio do Formulário
     const form = document.getElementById('relatorio-form');
     const message = document.getElementById('message');
 
     form.addEventListener('submit', e => {
         e.preventDefault();
-
-        if (!isSystemOpen) {
-            alert('O sistema está fechado para novos envios.');
-            return;
-        }
-
-        if (!document.getElementById('cidade-value').value) {
-            alert('Por favor, selecione uma cidade.');
-            return;
-        }
-        if (!document.getElementById('bairro-value').value) {
-            alert('Por favor, selecione um bairro.');
-            return;
-        }
+        if (!isSystemOpen) { alert('Sistema fechado para novos envios.'); return; }
+        if (!document.getElementById('cidade-value').value) { alert('Selecione uma cidade.'); return; }
+        if (!document.getElementById('bairro-value').value) { alert('Selecione um bairro.'); return; }
 
         btnSubmit.innerText = 'Enviando...';
         btnSubmit.disabled = true;
-        message.className = '';
         message.style.display = 'none';
 
         fetch(scriptURL, { method: 'POST', body: new FormData(form) })
@@ -648,15 +466,17 @@
                     citySelect.reset();
                     bairroSelect.disable('Selecione a cidade primeiro...');
                     updateTotals();
+                    
+                    // Recarrega o painel de status caso esteja aberto
+                    if (document.getElementById('status-board').style.display === 'block') {
+                        loadWeeklyStatus();
+                    }
                 } else {
                     message.innerText = data.message;
                     message.className = 'error';
                 }
             })
-            .catch(() => {
-                message.innerText = 'Erro ao enviar o relatório. Verifique sua conexão e tente novamente.';
-                message.className = 'error';
-            })
+            .catch(() => { message.innerText = 'Erro ao enviar. Tente novamente.'; message.className = 'error'; })
             .finally(() => {
                 btnSubmit.innerText = 'Enviar Relatório';
                 btnSubmit.disabled = !isSystemOpen;
@@ -665,6 +485,75 @@
     });
 
     checkStatus();
+
+    // LÓGICA DO PAINEL DE STATUS SEMANAL (Dynamic Query rendering)
+    const btnViewStatus = document.getElementById('btn-view-status');
+    const statusBoard = document.getElementById('status-board');
+    const statusTitle = document.getElementById('status-board-title');
+    const statusContent = document.getElementById('status-content');
+
+    btnViewStatus.addEventListener('click', () => {
+        if (statusBoard.style.display === 'block') {
+            statusBoard.style.display = 'none';
+            btnViewStatus.innerText = '📊 Ver Status da Semana';
+        } else {
+            loadWeeklyStatus();
+        }
+    });
+
+    function loadWeeklyStatus() {
+        btnViewStatus.innerText = 'Carregando status...';
+        
+        const formData = new FormData();
+        formData.append('action', 'get_weekly_status');
+
+        fetch(scriptURL, { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if (data.result === 'success') {
+                    // Pass the submitted list mapping directly to the renderer
+                    renderStatusBoard(data.submitted, data.semana);
+                    statusBoard.style.display = 'block';
+                    btnViewStatus.innerText = 'Ocultar Status da Semana';
+                } else {
+                    alert('Erro ao carregar o painel de status.');
+                }
+            })
+            .catch(() => alert('Erro de conexão ao carregar o status.'))
+            .finally(() => {
+                if(statusBoard.style.display !== 'block') {
+                    btnViewStatus.innerText = '📊 Ver Status da Semana';
+                }
+            });
+    }
+
+    function renderStatusBoard(submittedData, semanaTexto) {
+        statusTitle.innerText = `Status de Envios - ${semanaTexto}`;
+        let html = '';
+
+        // Iterate over the local static LOCATIONS object
+        Object.keys(locations).sort().forEach(city => {
+            html += `<div class="city-group">`;
+            html += `<div class="city-title">${city}</div>`;
+            html += `<div class="status-grid">`;
+            
+            locations[city].sort().forEach(bairro => {
+                // Check if the unique key "Cidade|Bairro" exists in the submitted object
+                const uniqueKey = `${city}|${bairro}`;
+                const isOk = submittedData[uniqueKey] === true;
+                
+                const icon = isOk ? '<span>🟢</span>' : '<span>🔴</span>';
+                const color = isOk ? '#2e7d32' : '#c62828';
+                
+                html += `<div class="status-item" style="color: ${color}">${icon} ${bairro}</div>`;
+            });
+            
+            html += `</div></div>`;
+        });
+        
+        statusContent.innerHTML = html;
+    }
+
 </script>
 
 </body>
