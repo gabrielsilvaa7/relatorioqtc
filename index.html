@@ -125,6 +125,18 @@
             border: 1px solid #e0e0e0; margin-top: 15px; width: 100%; text-align: left;
         }
         .status-board h3 { text-align: center; font-size: 16px; color: #333; margin-bottom: 15px; }
+        
+        /* Contagem e Botões de Cópia */
+        .status-summary { display: flex; justify-content: space-around; margin-bottom: 15px; font-size: 15px; font-weight: bold; }
+        .summary-item.success { color: #2e7d32; }
+        .summary-item.error { color: #c62828; }
+        
+        .status-actions { display: flex; gap: 10px; margin-bottom: 20px; }
+        .btn-copy { padding: 8px; font-size: 13px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; flex: 1; color: white; transition: opacity 0.2s; }
+        .btn-copy:hover { opacity: 0.8; }
+        .btn-copy.ok { background-color: #2e7d32; }
+        .btn-copy.nok { background-color: #c62828; }
+
         .city-group { margin-bottom: 16px; }
         .city-title { font-weight: bold; font-size: 14px; color: #1976d2; border-bottom: 1px solid #eee; padding-bottom: 4px; margin-bottom: 8px; }
         .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -224,8 +236,20 @@
 
     <!-- BOTÃO E PAINEL DE STATUS DAS IGREJAS -->
     <button type="button" id="btn-view-status" class="btn-view-status">📊 Ver Status da Semana</button>
+    
     <div id="status-board" class="status-board">
-        <h3 id="status-board-title">Status da Semana</h3>
+        <h3 id="status-board-title">Status de Envios dessa Semana</h3>
+        
+        <div class="status-summary">
+            <div class="summary-item success">🟢 Enviaram: <span id="count-ok">0</span></div>
+            <div class="summary-item error">🔴 Pendentes: <span id="count-nok">0</span></div>
+        </div>
+        
+        <div class="status-actions">
+            <button type="button" id="btn-copy-ok" class="btn-copy ok">📋 Copiar Enviados</button>
+            <button type="button" id="btn-copy-nok" class="btn-copy nok">📋 Copiar Pendentes</button>
+        </div>
+
         <div id="status-content"></div>
     </div>
 </div>
@@ -486,11 +510,13 @@
 
     checkStatus();
 
-    // LÓGICA DO PAINEL DE STATUS SEMANAL (Dynamic Query rendering)
+    // LÓGICA DO PAINEL DE STATUS SEMANAL COM CONTADOR E CÓPIA
     const btnViewStatus = document.getElementById('btn-view-status');
     const statusBoard = document.getElementById('status-board');
-    const statusTitle = document.getElementById('status-board-title');
     const statusContent = document.getElementById('status-content');
+    
+    let textToCopyOk = "";
+    let textToCopyNok = "";
 
     btnViewStatus.addEventListener('click', () => {
         if (statusBoard.style.display === 'block') {
@@ -511,8 +537,7 @@
             .then(res => res.json())
             .then(data => {
                 if (data.result === 'success') {
-                    // Pass the submitted list mapping directly to the renderer
-                    renderStatusBoard(data.submitted, data.semana);
+                    renderStatusBoard(data.submitted);
                     statusBoard.style.display = 'block';
                     btnViewStatus.innerText = 'Ocultar Status da Semana';
                 } else {
@@ -527,20 +552,33 @@
             });
     }
 
-    function renderStatusBoard(submittedData, semanaTexto) {
-        statusTitle.innerText = `Status de Envios dessa Semana`;
+    function renderStatusBoard(submittedData) {
         let html = '';
+        let countOk = 0;
+        let countNok = 0;
 
-        // Iterate over the local static LOCATIONS object
+        textToCopyOk = "*Igrejas que ENVIARAM o relatório:*\n\n";
+        textToCopyNok = "*Igrejas PENDENTES de relatório:*\n\n";
+
         Object.keys(locations).sort().forEach(city => {
             html += `<div class="city-group">`;
             html += `<div class="city-title">${city}</div>`;
             html += `<div class="status-grid">`;
             
+            let cityOkList = [];
+            let cityNokList = [];
+
             locations[city].sort().forEach(bairro => {
-                // Check if the unique key "Cidade|Bairro" exists in the submitted object
                 const uniqueKey = `${city}|${bairro}`;
                 const isOk = submittedData[uniqueKey] === true;
+                
+                if (isOk) {
+                    countOk++;
+                    cityOkList.push(bairro);
+                } else {
+                    countNok++;
+                    cityNokList.push(bairro);
+                }
                 
                 const icon = isOk ? '<span>🟢</span>' : '<span>🔴</span>';
                 const color = isOk ? '#2e7d32' : '#c62828';
@@ -549,10 +587,37 @@
             });
             
             html += `</div></div>`;
+
+            // Adiciona as cidades aos textos de cópia
+            if (cityOkList.length > 0) {
+                textToCopyOk += `📍 *${city}*:\n` + cityOkList.map(b => `  - ${b}`).join("\n") + "\n\n";
+            }
+            if (cityNokList.length > 0) {
+                textToCopyNok += `📍 *${city}*:\n` + cityNokList.map(b => `  - ${b}`).join("\n") + "\n\n";
+            }
         });
+
+        // Atualiza os contadores na tela
+        document.getElementById('count-ok').innerText = countOk;
+        document.getElementById('count-nok').innerText = countNok;
         
         statusContent.innerHTML = html;
     }
+
+    // Funções para os botões de copiar
+    document.getElementById('btn-copy-ok').addEventListener('click', () => {
+        if (!textToCopyOk) return;
+        navigator.clipboard.writeText(textToCopyOk)
+            .then(() => alert('Lista de igrejas que ENVIARAM foi copiada com sucesso!'))
+            .catch(err => alert('Falha ao copiar texto.'));
+    });
+
+    document.getElementById('btn-copy-nok').addEventListener('click', () => {
+        if (!textToCopyNok) return;
+        navigator.clipboard.writeText(textToCopyNok)
+            .then(() => alert('Lista de igrejas PENDENTES foi copiada com sucesso!'))
+            .catch(err => alert('Falha ao copiar texto.'));
+    });
 
 </script>
 
