@@ -110,9 +110,33 @@
         button:hover { background-color: var(--primary-hover); }
         button:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        #message { text-align: center; margin-top: 16px; padding: 10px; border-radius: 6px; font-size: 14px; display: none; }
-        .success { display: block !important; background-color: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
-        .error { display: block !important; background-color: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
+        /* Estilo do Modal Centralizado */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: none; justify-content: center; align-items: center;
+            z-index: 9999; padding: 20px;
+        }
+        .modal-box {
+            background: #fff; padding: 30px 20px; border-radius: 12px;
+            text-align: center; max-width: 360px; width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .modal-icon { font-size: 50px; margin-bottom: 15px; }
+        .modal-box h3 { margin-bottom: 10px; font-size: 22px; color: #333; }
+        .modal-box p { color: #555; margin-bottom: 24px; font-size: 15px; line-height: 1.5; }
+        .modal-btn {
+            background: var(--primary-color); color: #fff; border: none;
+            padding: 12px 30px; border-radius: 6px; font-size: 16px; font-weight: bold;
+            cursor: pointer; width: auto; min-width: 120px; display: inline-block;
+        }
+        .modal-btn.success-bg { background-color: #2e7d32; }
+        .modal-btn:hover { opacity: 0.9; }
 
         /* Painel de Status da Semana */
         .btn-view-status {
@@ -232,7 +256,6 @@
 
         <button type="submit" id="btn-submit">Enviar Relatório</button>
     </form>
-    <div id="message"></div>
 
     <!-- BOTÃO E PAINEL DE STATUS DAS IGREJAS -->
     <button type="button" id="btn-view-status" class="btn-view-status">📊 Ver Status da Semana</button>
@@ -256,6 +279,16 @@
 
 <div class="admin-footer">
     <button id="admin-toggle-btn" class="admin-btn">⚙️ Painel do Administrador</button>
+</div>
+
+<!-- COMPONENTE MODAL CENTRALIZADO -->
+<div id="custom-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div id="modal-icon" class="modal-icon"></div>
+        <h3 id="modal-title">Título</h3>
+        <p id="modal-message">Mensagem vai aqui.</p>
+        <button id="modal-ok-btn" class="modal-btn">OK</button>
+    </div>
 </div>
 
 <script>
@@ -288,6 +321,36 @@
         "Tabatinga": ["Tabatinga"],
         "Tefé": ["Tefé"]
     };
+
+    // FUNÇÕES DO MODAL
+    const modalOverlay = document.getElementById('custom-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalMessage = document.getElementById('modal-message');
+    const modalIcon = document.getElementById('modal-icon');
+    const modalBtn = document.getElementById('modal-ok-btn');
+
+    function showModal(title, message, type) {
+        modalTitle.innerText = title;
+        modalMessage.innerText = message;
+        
+        if (type === 'success') {
+            modalIcon.innerHTML = '✅';
+            modalBtn.className = 'modal-btn success-bg';
+        } else if (type === 'error') {
+            modalIcon.innerHTML = '🛑';
+            modalBtn.className = 'modal-btn';
+        } else {
+            modalIcon.innerHTML = 'ℹ️';
+            modalBtn.className = 'modal-btn';
+        }
+
+        modalOverlay.style.display = 'flex';
+    }
+
+    modalBtn.addEventListener('click', () => {
+        modalOverlay.style.display = 'none';
+    });
+
 
     class SearchableSelect {
         constructor(containerId, placeholder, onSelectCallback) {
@@ -426,14 +489,18 @@
     const btnSubmit = document.getElementById('btn-submit');
     let isSystemOpen = true;
 
-    function checkStatus() {
-        fetch(`${scriptURL}?action=get_status`)
+    function checkStatus(isInitialLoad = false) {
+        // CORREÇÃO AQUI: Mudando de GET para POST usando FormData
+        const formData = new FormData();
+        formData.append('action', 'get_status');
+
+        fetch(scriptURL, { method: 'POST', body: formData })
             .then(res => res.json())
-            .then(data => updateStatusUI(data.status))
-            .catch(() => updateStatusUI("ABERTO"));
+            .then(data => updateStatusUI(data.status, isInitialLoad))
+            .catch(() => updateStatusUI("ABERTO", false)); // Em caso de erro grave, mantém o padrão.
     }
 
-    function updateStatusUI(status) {
+    function updateStatusUI(status, isInitialLoad = false) {
         if (status === "ABERTO") {
             isSystemOpen = true;
             statusBadge.className = "status-badge open";
@@ -444,6 +511,11 @@
             statusBadge.className = "status-badge closed";
             statusBadge.innerText = "🔴 Sistema Fechado pelo Administrador";
             btnSubmit.disabled = true;
+            
+            // Regra: Mostrar pop-up quando o usuário atualiza/abre a página e já está fechado
+            if (isInitialLoad) {
+                showModal("Sistema Fechado", "O sistema de relatórios está fechado no momento. Não é possível realizar novos envios.", "error");
+            }
         }
     }
 
@@ -460,14 +532,12 @@
             .then(data => {
                 if (data.result === 'success') {
                     alert(`Status alterado para: ${data.status}`);
-                    updateStatusUI(data.status);
+                    updateStatusUI(data.status, false); // Passa false para não exibir o modal de alerta pro próprio admin
                 } else { alert(`Erro: ${data.message}`); }
             }).catch(() => alert("Erro ao comunicar com o servidor."));
     });
 
-    // -------------------------------------------------------------
-    // FUNÇÃO ASSÍNCRONA DE RETENTATIVA (Lida com picos de servidor)
-    // -------------------------------------------------------------
+    // Função de Retentativa para suportar picos de 100 envios
     async function fetchWithRetry(url, options, retries = 3, backoff = 2000) {
         for (let i = 0; i < retries; i++) {
             try {
@@ -477,34 +547,44 @@
                 return data;
             } catch (error) {
                 if (i === retries - 1) throw error; 
-                console.warn(`Tentativa ${i + 1} falhou. Tentando novamente em ${backoff}ms...`);
                 await new Promise(res => setTimeout(res, backoff));
             }
         }
     }
 
-    // Envio do Formulário (Usando fetchWithRetry)
+    // Envio do Formulário 
     const form = document.getElementById('relatorio-form');
-    const message = document.getElementById('message');
 
     form.addEventListener('submit', async e => {
         e.preventDefault();
-        if (!isSystemOpen) { alert('Sistema fechado para novos envios.'); return; }
-        if (!document.getElementById('cidade-value').value) { alert('Selecione uma cidade.'); return; }
-        if (!document.getElementById('bairro-value').value) { alert('Selecione um bairro.'); return; }
+        
+        // Verifica fechamento
+        if (!isSystemOpen) { 
+            showModal('Atenção', 'O sistema está fechado para novos envios no momento.', 'error');
+            return; 
+        }
+        
+        // Validação de formulário
+        if (!document.getElementById('cidade-value').value) { 
+            showModal('Campo Obrigatório', 'Por favor, selecione uma cidade.', 'error');
+            return; 
+        }
+        if (!document.getElementById('bairro-value').value) { 
+            showModal('Campo Obrigatório', 'Por favor, selecione o bairro da Igreja.', 'error');
+            return; 
+        }
 
         btnSubmit.innerText = 'Enviando...';
         btnSubmit.disabled = true;
-        message.style.display = 'none';
 
         try {
             const formData = new FormData(form);
-            // Chama a API com Retry (3 tentativas, com 2 segundos entre elas)
             const data = await fetchWithRetry(scriptURL, { method: 'POST', body: formData }, 3, 2000);
 
             if (data.result === 'success') {
-                message.innerText = 'Relatório enviado com sucesso!';
-                message.className = 'success';
+                // EXIBE MODAL DE SUCESSO
+                showModal('Enviado com Sucesso!', 'O relatório da sua Igreja foi salvo perfeitamente.', 'success');
+                
                 form.reset();
                 document.querySelectorAll('.num-input').forEach(i => i.value = '0');
                 citySelect.reset();
@@ -516,20 +596,18 @@
                     loadWeeklyStatus();
                 }
             } else {
-                message.innerText = data.message;
-                message.className = 'error';
+                showModal('Atenção', data.message, 'error');
             }
         } catch (error) {
-            message.innerText = 'Erro de comunicação ao enviar. Verifique sua conexão e tente novamente.';
-            message.className = 'error';
+            showModal('Falha de Conexão', 'Houve um erro de rede ao tentar enviar. Por favor, tente novamente.', 'error');
         } finally {
             btnSubmit.innerText = 'Enviar Relatório';
             btnSubmit.disabled = !isSystemOpen;
-            setTimeout(() => { message.style.display = 'none'; }, 6000);
         }
     });
 
-    checkStatus();
+    // Chama o checkStatus no carregamento inicial da página (passando "true")
+    checkStatus(true);
 
     // LÓGICA DO PAINEL DE STATUS SEMANAL
     const btnViewStatus = document.getElementById('btn-view-status');
@@ -623,7 +701,6 @@
         statusContent.innerHTML = html;
     }
 
-    // Funções para os botões de copiar
     document.getElementById('btn-copy-ok').addEventListener('click', () => {
         if (!textToCopyOk) return;
         navigator.clipboard.writeText(textToCopyOk)
@@ -637,7 +714,6 @@
             .then(() => alert('Lista de igrejas PENDENTES foi copiada com sucesso!'))
             .catch(err => alert('Falha ao copiar texto.'));
     });
-
 </script>
 
 </body>
