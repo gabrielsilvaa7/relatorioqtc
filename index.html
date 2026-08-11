@@ -167,9 +167,19 @@
         .status-item { font-size: 13px; display: flex; align-items: center; color: #555;}
         .status-item span { margin-right: 6px; font-size: 10px; }
 
+        /* Rodapé de Administração Camuflado */
         .admin-footer { margin-top: 20px; text-align: center; width: 100%; }
-        .admin-btn { background: none; border: none; color: #888; font-size: 12px; cursor: pointer; text-decoration: underline; width: auto; padding: 5px;}
-        .admin-btn:hover { color: #333; background: none;}
+        .admin-btn { 
+            background: none; 
+            border: none; 
+            color: #999; 
+            font-size: 13px; 
+            cursor: default; /* Remove a mãozinha */
+            text-decoration: none; /* Remove o sublinhado */
+            width: auto; 
+            padding: 5px;
+        }
+        /* Não adicionamos efeito hover para ele ficar 100% camuflado */
     </style>
 </head>
 <body>
@@ -278,7 +288,8 @@
 </div>
 
 <div class="admin-footer">
-    <button id="admin-toggle-btn" class="admin-btn">⚙️ Painel do Administrador</button>
+    <!-- Botão de Administração Camuflado -->
+    <button id="admin-toggle-btn" class="admin-btn">© 2026 App Quero te Conhecer</button>
 </div>
 
 <!-- COMPONENTE MODAL CENTRALIZADO -->
@@ -490,14 +501,13 @@
     let isSystemOpen = true;
 
     function checkStatus(isInitialLoad = false) {
-        // CORREÇÃO AQUI: Mudando de GET para POST usando FormData
         const formData = new FormData();
         formData.append('action', 'get_status');
 
         fetch(scriptURL, { method: 'POST', body: formData })
             .then(res => res.json())
             .then(data => updateStatusUI(data.status, isInitialLoad))
-            .catch(() => updateStatusUI("ABERTO", false)); // Em caso de erro grave, mantém o padrão.
+            .catch(() => updateStatusUI("ABERTO", false));
     }
 
     function updateStatusUI(status, isInitialLoad = false) {
@@ -512,14 +522,13 @@
             statusBadge.innerText = "🔴 Sistema Fechado pelo Administrador";
             btnSubmit.disabled = true;
             
-            // Regra: Mostrar pop-up quando o usuário atualiza/abre a página e já está fechado
             if (isInitialLoad) {
                 showModal("Sistema Fechado", "O sistema de relatórios está fechado no momento. Não é possível realizar novos envios.", "error");
             }
         }
     }
 
-    // Toggle Administrativo
+    // Toggle Administrativo (Botão Camuflado)
     document.getElementById('admin-toggle-btn').addEventListener('click', () => {
         const pin = prompt("Digite o PIN do Administrador:");
         if (!pin) return;
@@ -532,12 +541,12 @@
             .then(data => {
                 if (data.result === 'success') {
                     alert(`Status alterado para: ${data.status}`);
-                    updateStatusUI(data.status, false); // Passa false para não exibir o modal de alerta pro próprio admin
+                    updateStatusUI(data.status, false);
                 } else { alert(`Erro: ${data.message}`); }
             }).catch(() => alert("Erro ao comunicar com o servidor."));
     });
 
-    // Função de Retentativa para suportar picos de 100 envios
+    // Função de Retentativa para suportar picos
     async function fetchWithRetry(url, options, retries = 3, backoff = 2000) {
         for (let i = 0; i < retries; i++) {
             try {
@@ -558,13 +567,11 @@
     form.addEventListener('submit', async e => {
         e.preventDefault();
         
-        // Verifica fechamento
         if (!isSystemOpen) { 
             showModal('Atenção', 'O sistema está fechado para novos envios no momento.', 'error');
             return; 
         }
         
-        // Validação de formulário
         if (!document.getElementById('cidade-value').value) { 
             showModal('Campo Obrigatório', 'Por favor, selecione uma cidade.', 'error');
             return; 
@@ -582,7 +589,6 @@
             const data = await fetchWithRetry(scriptURL, { method: 'POST', body: formData }, 3, 2000);
 
             if (data.result === 'success') {
-                // EXIBE MODAL DE SUCESSO
                 showModal('Enviado com Sucesso!', 'O relatório da sua Igreja foi salvo perfeitamente.', 'success');
                 
                 form.reset();
@@ -591,7 +597,6 @@
                 bairroSelect.disable('Selecione a cidade primeiro...');
                 updateTotals();
                 
-                // Recarrega o painel de status caso esteja aberto
                 if (document.getElementById('status-board').style.display === 'block') {
                     loadWeeklyStatus();
                 }
@@ -606,7 +611,7 @@
         }
     });
 
-    // Chama o checkStatus no carregamento inicial da página (passando "true")
+    // Chama o checkStatus no carregamento inicial da página
     checkStatus(true);
 
     // LÓGICA DO PAINEL DE STATUS SEMANAL
