@@ -110,7 +110,7 @@
         button:hover { background-color: var(--primary-hover); }
         button:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        /* Estilo do Modal Centralizado */
+        /* Estilo dos Modais Centralizados */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 0, 0, 0.6);
@@ -119,7 +119,7 @@
         }
         .modal-box {
             background: #fff; padding: 30px 20px; border-radius: 12px;
-            text-align: center; max-width: 360px; width: 100%;
+            text-align: center; max-width: 380px; width: 100%;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
@@ -132,11 +132,20 @@
         .modal-box p { color: #555; margin-bottom: 24px; font-size: 15px; line-height: 1.5; }
         .modal-btn {
             background: var(--primary-color); color: #fff; border: none;
-            padding: 12px 30px; border-radius: 6px; font-size: 16px; font-weight: bold;
-            cursor: pointer; width: auto; min-width: 120px; display: inline-block;
+            padding: 12px 20px; border-radius: 6px; font-size: 15px; font-weight: bold;
+            cursor: pointer; width: auto; min-width: 110px; display: inline-block;
         }
         .modal-btn.success-bg { background-color: #2e7d32; }
+        .modal-btn.neutral-bg { background-color: #757575; }
         .modal-btn:hover { opacity: 0.9; }
+
+        /* Painel de Confirmação Específico */
+        .confirm-details {
+            text-align: left; background: #f9f9f9; padding: 15px; 
+            border-radius: 8px; border: 1px solid #eee; margin-bottom: 20px;
+            font-size: 14px; color: #444; line-height: 1.6;
+        }
+        .confirm-actions { display: flex; gap: 10px; justify-content: center; }
 
         /* Painel de Status da Semana */
         .btn-view-status {
@@ -170,14 +179,8 @@
         /* Rodapé de Administração Camuflado */
         .admin-footer { margin-top: 20px; text-align: center; width: 100%; }
         .admin-btn { 
-            background: none; 
-            border: none; 
-            color: #999; 
-            font-size: 13px; 
-            cursor: default; /* Remove a mãozinha */
-            text-decoration: none; /* Remove o sublinhado */
-            width: auto; 
-            padding: 5px;
+            background: none; border: none; color: #999; font-size: 13px; 
+            cursor: default; text-decoration: none; width: auto; padding: 5px;
         }
     </style>
 </head>
@@ -291,13 +294,31 @@
     <button id="admin-toggle-btn" class="admin-btn">© 2026 Gabriel Silva</button>
 </div>
 
-<!-- COMPONENTE MODAL CENTRALIZADO -->
+<!-- MODAL GENÉRICO DE AVISO (Sucesso, Erro, Info) -->
 <div id="custom-modal" class="modal-overlay">
     <div class="modal-box">
         <div id="modal-icon" class="modal-icon"></div>
         <h3 id="modal-title">Título</h3>
         <p id="modal-message">Mensagem vai aqui.</p>
         <button id="modal-ok-btn" class="modal-btn">OK</button>
+    </div>
+</div>
+
+<!-- MODAL DE CONFIRMAÇÃO DE ENVIO -->
+<div id="confirm-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-icon">📝</div>
+        <h3>Confirme os Dados</h3>
+        <p style="margin-bottom: 10px; font-size: 14px;">Por favor, revise as informações antes de enviar:</p>
+        
+        <div id="confirm-details" class="confirm-details">
+            <!-- Os dados serão injetados dinamicamente aqui -->
+        </div>
+
+        <div class="confirm-actions">
+            <button id="btn-cancel-confirm" class="modal-btn neutral-bg">Voltar</button>
+            <button id="btn-send-confirm" class="modal-btn success-bg">Confirmar</button>
+        </div>
     </div>
 </div>
 
@@ -332,7 +353,9 @@
         "Tefé": ["Tefé"]
     };
 
-    // FUNÇÕES DO MODAL
+    // ==========================================
+    // LÓGICA DOS MODAIS
+    // ==========================================
     const modalOverlay = document.getElementById('custom-modal');
     const modalTitle = document.getElementById('modal-title');
     const modalMessage = document.getElementById('modal-message');
@@ -361,7 +384,20 @@
         modalOverlay.style.display = 'none';
     });
 
+    // Lógica do Modal de Confirmação
+    const confirmModal = document.getElementById('confirm-modal');
+    const confirmDetails = document.getElementById('confirm-details');
+    const btnCancelConfirm = document.getElementById('btn-cancel-confirm');
+    const btnSendConfirm = document.getElementById('btn-send-confirm');
 
+    btnCancelConfirm.addEventListener('click', () => {
+        confirmModal.style.display = 'none';
+    });
+
+
+    // ==========================================
+    // COMPONENTES DE INTERFACE (Selects, Inputs)
+    // ==========================================
     class SearchableSelect {
         constructor(containerId, placeholder, onSelectCallback) {
             this.container = document.getElementById(containerId);
@@ -494,7 +530,9 @@
     avalCounters.forEach(input => input.addEventListener('input', updateTotals));
     userCounters.forEach(input => input.addEventListener('input', updateTotals));
 
-    // Status do Sistema (Aberto/Fechado)
+    // ==========================================
+    // COMUNICAÇÃO COM O SERVIDOR E STATUS
+    // ==========================================
     const statusBadge = document.getElementById('status-badge');
     const btnSubmit = document.getElementById('btn-submit');
     let isSystemOpen = true;
@@ -560,10 +598,13 @@
         }
     }
 
-    // Envio do Formulário 
+    // ==========================================
+    // FLUXO DE ENVIO DO FORMULÁRIO (Com Confirmação)
+    // ==========================================
     const form = document.getElementById('relatorio-form');
 
-    form.addEventListener('submit', async e => {
+    // 1. Ao clicar em Enviar, validamos e mostramos o Modal de Confirmação
+    form.addEventListener('submit', e => {
         e.preventDefault();
         
         if (!isSystemOpen) { 
@@ -571,15 +612,51 @@
             return; 
         }
         
-        if (!document.getElementById('cidade-value').value) { 
+        const cidade = document.getElementById('cidade-value').value;
+        const bairro = document.getElementById('bairro-value').value;
+        
+        if (!cidade) { 
             showModal('Campo Obrigatório', 'Por favor, selecione uma cidade.', 'error');
             return; 
         }
-        if (!document.getElementById('bairro-value').value) { 
+        if (!bairro) { 
             showModal('Campo Obrigatório', 'Por favor, selecione o bairro da Igreja.', 'error');
             return; 
         }
 
+        // Coleta os valores digitados para o resumo
+        const avalAndroid = document.getElementById('aval_android').value;
+        const avalIos = document.getElementById('aval_ios').value;
+        const mMulher = document.getElementById('membro_mulher').value;
+        const mHomem = document.getElementById('membro_homem').value;
+        const obreiro = document.getElementById('obreiro').value;
+        const obreira = document.getElementById('obreira').value;
+        const totalAval = document.getElementById('total-aval-display').innerText;
+        const totalUser = document.getElementById('total-user-display').innerText;
+
+        // Injeta os dados formatados no Modal
+        confirmDetails.innerHTML = `
+            <strong>📍 Local:</strong> ${bairro} (${cidade})<br><br>
+            <strong>📱 Avaliações do App:</strong><br>
+            - Android: ${avalAndroid}<br>
+            - iOS: ${avalIos}<br>
+            <em>Total de Avaliações: ${totalAval}</em><br><br>
+            <strong>👥 Novos Usuários:</strong><br>
+            - Mulheres: ${mMulher}<br>
+            - Homens: ${mHomem}<br>
+            - Obreiros: ${obreiro}<br>
+            - Obreiras: ${obreira}<br>
+            <em>Total de Novos Usuários: ${totalUser}</em>
+        `;
+
+        // Exibe o Modal de Confirmação
+        confirmModal.style.display = 'flex';
+    });
+
+    // 2. Ao clicar em Confirmar no Modal, executa o envio real
+    btnSendConfirm.addEventListener('click', async () => {
+        confirmModal.style.display = 'none'; // Esconde a janela de confirmação
+        
         btnSubmit.innerText = 'Enviando...';
         btnSubmit.disabled = true;
 
@@ -613,7 +690,10 @@
     // Chama o checkStatus no carregamento inicial da página
     checkStatus(true);
 
+
+    // ==========================================
     // LÓGICA DO PAINEL DE STATUS SEMANAL
+    // ==========================================
     const btnViewStatus = document.getElementById('btn-view-status');
     const statusBoard = document.getElementById('status-board');
     const statusContent = document.getElementById('status-content');
